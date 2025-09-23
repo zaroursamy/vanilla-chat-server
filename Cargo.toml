@@ -1,0 +1,33 @@
+[package]
+name = "vanilla-chat-server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = { version = "0.8.1", features = ["multipart", "ws"] }
+axum-extra = {version = "0.10.0", features = ["typed-header"] }
+jsonwebtoken = "9.3.1"
+reqwest = { version = "0.12.15", features = ["multipart", "json", "rustls-tls"] }
+
+dotenv = "0.15.0"
+
+futures = "0.3.31"
+
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+
+tokio = {version = "1.44.1", features = ["full"] }
+
+tower = "0.5.2"
+tower-http = {version = "0.6.2", features = ["trace", "cors"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+log = "0.4.26"
+chrono = {version = "0.4.40", features = ["serde"]}
+axum-macros = "0.5.0"
+sha1 = "0.10.6"
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio", "chrono"] }
+async-trait = "0.1.89"
+anyhow = "1.0.100"
+tokio-tungstenite = {version = "0.27.0", features = ["rustls-tls-native-roots"] }
+futures-util = "0.3.31"
