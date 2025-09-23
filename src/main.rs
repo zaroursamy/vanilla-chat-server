@@ -1,3 +1,7 @@
+use rdkafka::{
+    ClientConfig,
+    producer::{FutureProducer, FutureRecord, future_producer},
+};
 use std::sync::Arc;
 
 use axum::{
@@ -45,8 +49,19 @@ async fn main() -> anyhow::Result<()> {
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await?;
 
+    let redis_client = redis::Client::open("redis://127.0.0.1/")?;
+
+    let brokers = std::env::var("KAFKA_BROKERS").expect("DATABASE_URL must be set");
+    let kafka_producer = ClientConfig::new()
+        .set("bootstrap.servers", &*brokers)
+        .set("message.timeout.ms", "5000")
+        .create()
+        .expect("Producer creation error");
+
     let app_state = AppState {
         user_repo: Arc::new(PostgresUserRepository { pool }),
+        redis_client,
+        kafka_producer,
     };
 
     let router = Router::new()
