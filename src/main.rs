@@ -2,12 +2,15 @@ use rdkafka::{
     ClientConfig,
     producer::{FutureProducer, FutureRecord, future_producer},
 };
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 
 use axum::{
     Router,
     http::HeaderValue,
-    routing::{get, post},
+    routing::{any, get, post},
 };
 use dotenv::dotenv;
 use reqwest::{
@@ -19,7 +22,11 @@ use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing::info;
 use vanilla_chat_server::{
     self,
-    api::{health_checker_handler, state::AppState},
+    api::{
+        health_checker_handler,
+        state::{AppState, WsSender},
+        ws::ws_twitch_handler::ws_handler,
+    },
     application::commands::start_twitch::start_twitch,
     infrastructure::db::postgres_user_repository::PostgresUserRepository,
 };
@@ -62,11 +69,13 @@ async fn main() -> anyhow::Result<()> {
         user_repo: Arc::new(PostgresUserRepository { pool }),
         redis_client,
         kafka_producer,
+        ws_hub: Arc::new(tokio::sync::RwLock::new(HashMap::<String, WsSender>::new())),
     };
 
     let router = Router::new()
         .route("/healthchecker", get(health_checker_handler))
         .route("/start-twitch", post(start_twitch))
+        .route("/ws", any(ws_handler))
         .with_state(app_state);
 
     let app = router.layer(cors).layer(trace_layer);
