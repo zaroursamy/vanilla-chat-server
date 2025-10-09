@@ -1,11 +1,5 @@
-use rdkafka::{
-    ClientConfig,
-    producer::{FutureProducer, FutureRecord, future_producer},
-};
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
+use rdkafka::ClientConfig;
+use std::{collections::HashMap, sync::Arc};
 
 use axum::{
     Router,
