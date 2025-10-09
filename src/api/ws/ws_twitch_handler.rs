@@ -7,10 +7,8 @@ use axum::{
     response::IntoResponse,
 };
 use serde::Deserialize;
-use serde_json::json;
-use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::{RwLock, broadcast};
+
+use tokio::sync::broadcast;
 use tracing::{error, info};
 
 use crate::api::state::AppState;
@@ -23,7 +21,7 @@ async fn handle_socket(socket: WebSocket, broadcaster_id: String, state: AppStat
         broadcaster_id
     );
     // Étape 1 : récupérer Receiver depuis le hub
-    let mut receiver = {
+    let mut hub_receiver = {
         let hub = state.ws_hub.clone();
         let mut hub_guard = hub.write().await;
 
@@ -40,7 +38,7 @@ async fn handle_socket(socket: WebSocket, broadcaster_id: String, state: AppStat
 
     // Étape 3 : tâche qui ENVOIE vers le frontend
     let send_task = tokio::spawn(async move {
-        while let Ok(msg) = receiver.recv().await {
+        while let Ok(msg) = hub_receiver.recv().await {
             info!("Try to send message to front-end {:?}", msg);
 
             if ws_sender
